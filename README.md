@@ -4,65 +4,72 @@
 
 This project implements and enhances an automated job-analysis pipeline built in **n8n** for evaluating Upwork listings relevant to automation and AI workflow development.
 
-The workflow fetches job listings from the Apify API, pre-filters and structures them, uses an LLM to evaluate relevance, and stores qualified opportunities in Airtable. It also alerts when high-priority jobs are detected and logs additional observability metrics to improve traceability and future tuning.
+The workflow fetches job listings from the Apify API, pre-filters and structures them, uses an LLM to evaluate relevance, and stores qualified opportunities in Airtable. It also alerts when high-priority jobs are detected and logs observability metrics to improve traceability and future tuning.
 
-The goal of this assignment was not just to run the provided workflow, but to make it stable, efficient, and production-oriented.
+The objective was not only to execute the provided workflow, but to make it stable, efficient, and production-oriented.
 
-drive link of the demo video:  https://drive.google.com/file/d/1mvN_MZ-QaNQjsK7SihflJ41RZrra9Lp2/view?usp=sharing
+### Execution Validation
+
+The workflow was executed end-to-end successfully without runtime errors.  
+More than **10 job listings were processed and stored in Airtable** during validation testing, satisfying assignment requirements.
+
+### Demo Video
+
+https://drive.google.com/file/d/1mvN_MZ-QaNQjsK7SihflJ41RZrra9Lp2/view?usp=sharing
+
 ---
 
 ## Workflow Architecture
 
-High-level pipeline:
+### High-Level Pipeline
 
-1. **Schedule Trigger**
+1. **Schedule Trigger**  
    Runs automatically every 8 hours.
 
-2. **HTTP Request Apify API**
+2. **HTTP Request (Apify API)**  
    Fetches recent Upwork job listings.
 
-3. **Edit Fields**
+3. **Edit Fields**  
    Normalizes incoming data fields for downstream nodes.
 
-4. **Pre-Filtering (If nodes)**
+4. **Pre-Filtering (If Nodes)**  
    Removes:
+   - Entry-level jobs  
+   - Very low or unknown budget listings  
 
-   * Entry-level jobs
-   * Very low/unknown budget listings
-     This reduces LLM token usage and improves scoring relevance.
+   This reduces LLM token usage and improves scoring relevance.
 
-5. **Analyse Job (OpenAI)**
+5. **Analyse Job (OpenAI)**  
    Scores jobs based on:
-
-   * Automation relevance
-   * Quick win potential
-   * Portfolio value
-   * Client credibility
+   - Automation relevance  
+   - Quick win potential  
+   - Portfolio value  
+   - Client credibility  
 
    Produces structured JSON:
 
-   ```
-   score
-   priority
-   reason
+   ```json
+   {
+     "score": "...",
+     "priority": "...",
+     "reason": "..."
+   }
    ```
 
-6. **Observability Layer (Enhancement)**
+6. **Observability Layer (Enhancement)**  
    Logs additional signals:
+   - `automationSignal` → keyword relevance score  
+   - `budgetTier` → Low / Medium / High classification  
+   - `experienceCategory` → normalized experience level  
+   - `processedAt` → execution timestamp  
 
-   * automationSignal → keyword relevance score
-   * budgetTier → Low / Medium / High classification
-   * experienceCategory → normalized experience level
-   * processedAt → execution timestamp
-
-   This allows monitoring and future tuning of scoring behavior.
+   These metrics enable monitoring, debugging, and future scoring refinement.
 
 7. **Priority Branching**
+   - High Priority → Email Alert  
+   - All Results → Airtable Storage  
 
-   * **High Priority → Email Alert**
-   * **All Results → Airtable Storage**
-
-8. **Airtable Integration**
+8. **Airtable Integration**  
    Stores structured lead data for proposal readiness.
 
 ---
@@ -71,58 +78,57 @@ High-level pipeline:
 
 ### Email Alert for High-Priority Jobs
 
-Implemented automated Gmail notification triggered when:
+Automated Gmail notification triggered when:
 
-```
+```text
 priority == High
 ```
 
-The email includes:
+Email includes:
+- Job title  
+- Score  
+- Reasoning  
+- Direct link  
 
-* Job title
-* Score
-* Reasoning
-* Direct link
-
-This enables real-time opportunity tracking.
+Enables real-time opportunity awareness.
 
 ---
 
 ### Skill-Based Signal Extraction
 
-Added keyword signal scoring to quantify automation relevance:
+Keyword signal scoring quantifies automation relevance:
 
-* n8n
-* workflow
-* AI
-* Twilio / Retell
-* integrations
-* Zapier / Make
+- n8n  
+- workflow  
+- AI  
+- Twilio / Retell  
+- integrations  
+- Zapier / Make  
 
-This metric supplements LLM scoring and provides transparency.
+This supplements LLM scoring and improves transparency.
 
 ---
 
 ### Budget-Based Pre-Filtering
 
-Jobs below a minimum budget threshold are filtered before LLM processing to:
+Jobs below a minimum threshold are filtered before LLM processing to:
 
-* Save API cost
-* Improve scoring quality
-* Reduce noise
+- Reduce API costs  
+- Improve scoring precision  
+- Remove low-value noise  
 
 ---
 
 ### Observability Logging
 
-Added metrics stored alongside each record:
+Metrics stored alongside each record:
 
-* Budget classification
-* Automation signal strength
-* Experience normalization
-* Processing timestamps
+- Budget classification  
+- Automation signal strength  
+- Experience normalization  
+- Processing timestamps  
 
-This improves debugging, traceability, and future model tuning.
+Improves traceability and debugging capability.
 
 ---
 
@@ -130,37 +136,51 @@ This improves debugging, traceability, and future model tuning.
 
 ### Requirements
 
-* Docker (recommended)
-* n8n
-* Apify API token
-* OpenAI API key
-* Airtable credentials
-* Gmail OAuth credential
+- Docker (recommended)
+- n8n
+- Apify API token
+- OpenAI API key
+- Airtable credentials
+- Gmail OAuth credential
 
 ---
 
 ### Run n8n (Docker)
 
-```
+```bash
 docker run -it --rm \
--p 5678:5678 \
--v ~/.n8n:/home/node/.n8n \
-n8nio/n8n
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
 ```
 
 ---
 
 ### Import Workflow
 
-1. Open n8n
-2. Import `Upwork-Automation.json`
+1. Open n8n  
+2. Import `Upwork-Automation.json`  
 3. Configure credentials:
+   - Apify  
+   - OpenAI  
+   - Airtable  
+   - Gmail  
+4. Execute workflow  
 
-   * Apify
-   * OpenAI
-   * Airtable
-   * Gmail
-4. Execute workflow
+---
+
+### Credential Template
+
+A configuration template is provided to illustrate required setup without exposing secrets.
+
+Users must supply:
+
+- Apify API Token  
+- OpenAI API Key  
+- Airtable Credentials  
+- Gmail OAuth Access  
+
+No sensitive information is stored in this repository.
 
 ---
 
@@ -168,19 +188,19 @@ n8nio/n8n
 
 Jobs are evaluated for a candidate specializing in:
 
-* n8n automation
-* AI workflows
-* system integrations
-* conversational/voice automation
+- n8n automation  
+- AI workflows  
+- system integrations  
+- conversational / voice automation  
 
 Scoring prioritizes:
 
-* Fast completion potential
-* Portfolio value
-* Client legitimacy
-* Automation alignment
+- Fast completion potential  
+- Portfolio value  
+- Client legitimacy  
+- Automation alignment  
 
-This ensures high-value opportunities surface first.
+This ensures relevant opportunities surface first.
 
 ---
 
@@ -191,10 +211,18 @@ workflow/
   Upwork-Automation.json
 
 docs/
-  demo-video.mp4
+  Setup.md
+  Report.md
+
+screenshots/
+  AirTable1.png
+  AirTable2.png
+  WorkFlow.png
+
+demo/
+  demo-video-link.txt
 
 README.md
-report.pdf
 ```
 
 ---
@@ -203,60 +231,60 @@ report.pdf
 
 Stored in Airtable:
 
-* Title
-* Description
-* URL
-* Score
-* Priority
-* Reason
-* Proposal placeholder
-* Job timestamp
-* Applied flag
-* Observability signals
+- Title  
+- Description  
+- URL  
+- Score  
+- Priority  
+- Reason  
+- Proposal placeholder  
+- Job timestamp  
+- Applied flag  
+- Observability signals  
 
 ---
 
 ## Issues Identified & Fixed
 
-* Missing token configuration
-* OAuth credential errors
-* Airtable type mismatches
-* Expression mapping errors
-* HTML parsing artifacts in job descriptions
-* LLM output structure inconsistatches
+- Missing token configuration  
+- OAuth credential errors  
+- Airtable type mismatches  
+- Expression mapping errors  
+- HTML parsing artifacts in job descriptions  
+- LLM output structure inconsistencies  
 
 ---
 
 ## Future Improvements
 
-* Slack/Discord alert channel
-* Vector similarity job matching
-* Historical scoring analytics
-* Proposal auto-generation
-* Reputation-weighted client scoring
-* Retry + failure logging layer
-* Rate-limit adaptive scheduling
+- Slack/Discord alert channel  
+- Vector similarity job matching  
+- Historical scoring analytics  
+- Proposal auto-generation  
+- Reputation-weighted client scoring  
+- Retry and failure logging layer  
+- Rate-limit adaptive scheduling  
 
 ---
 
 ## Demo
 
-See repository demo video for:
+Repository demo illustrates:
 
-* Full workflow execution
-* AI scoring behavior
-* Airtable population
-* Alert trigger
+- Full workflow execution  
+- AI scoring behavior  
+- Airtable population  
+- Alert triggering  
 
 ---
 
 ## Author Notes
 
-This implementation focused on moving beyond basic execution toward a realistic production mindset:
+This implementation focused on moving beyond basic execution toward a production-oriented engineering mindset:
 
-* Minimizing unnecessary model calls
-* Introducing observability
-* Improving decision transparency
-* Building extensible workflow structure
+- Minimizing unnecessary model calls  
+- Introducing observability  
+- Improving decision transparency  
+- Building extensible workflow structure  
 
-The objective was to treat this as an engineering system rather than a simple automation exercise.
+The goal was to treat the system as an engineering workflow rather than a simple automation exercise.
