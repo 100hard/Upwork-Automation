@@ -1,194 +1,218 @@
-Setup Guide
-Upwork Automation Workflow
+# Setup Guide  
+## Upwork Automation Workflow
 
 This document explains how to reproduce and run the automation workflow locally using Docker and n8n.
 
+---
+
+## System Overview
+
 The system:
 
-Scrapes Upwork jobs using Apify
+- Scrapes Upwork jobs using **Apify**
+- Filters and enriches listings
+- Scores relevance using an **LLM**
+- Sends alerts for high-priority jobs
+- Stores structured data in **Airtable**
 
-Filters and enriches listings
+---
 
-Scores relevance using an LLM
-
-Sends alerts for high-priority jobs
-
-Stores structured data in Airtable
-
-Prerequisites
+## Prerequisites
 
 Install the following:
 
-Docker Desktop
+- Docker Desktop
+- Git
+- A modern browser
 
-Git
+### Accounts / API Keys
 
-A modern browser
+- OpenAI API key
+- Apify API token
+- Airtable account + API key
+- Gmail OAuth credentials *(optional — alerts)*
 
-Accounts / API Keys:
+---
 
-OpenAI API key
+## Repository Structure
 
-Apify API token
-
-Airtable account + API key
-
-Gmail OAuth credentials (optional — alerts)
-
-Repository Structure
+```bash
 upwork-automation/
-├ workflow/
-│   ├ docker-compose.yml
-│   ├ .env
-│   └ Upwork Automation.json
-├ docs/
-├ screenshots/
-└ demo/
+├─ workflow/
+│  ├─ docker-compose.yml
+│  ├─ .env
+│  └─ Upwork Automation.json
+├─ docs/
+├─ screenshots/
+└─ demo/
+```
 
-1. Start n8n
+---
+
+## 1. Start n8n
 
 Navigate to the workflow directory:
 
+```bash
 cd workflow
-
+```
 
 Start the container:
 
+```bash
 docker compose up -d
-
+```
 
 This launches n8n at:
 
+```
 http://localhost:5678
+```
 
+Login using credentials defined in `docker-compose.yml`.
 
-Login using credentials defined in docker-compose.yml.
+---
 
-2. Configure Environment Variables
+## 2. Configure Environment Variables
 
-Edit .env:
+Edit `.env`:
 
+```env
 OPENAI_API_KEY=your_key
 APIFY_TOKEN=your_token
 AIRTABLE_TOKEN=your_token
 AIRTABLE_BASE_ID=your_base
-
+```
 
 Restart container after changes:
 
+```bash
 docker compose restart
+```
 
-3. Import Workflow
+---
+
+## 3. Import Workflow
 
 Open n8n UI
 
 Go to:
 
+```
 Workflows → Import
-
+```
 
 Upload:
 
+```
 Upwork Automation.json
+```
 
-4. Configure Credentials in n8n
+---
+
+## 4. Configure Credentials in n8n
 
 Inside n8n configure:
 
-OpenAI
+### OpenAI
+- Paste API key
 
-Paste API key
+### Apify
+- Add token
 
-Apify
+### Airtable
+- Add Personal Access Token
+- Select Base + Table
 
-Add token
+### Gmail (Optional)
+- OAuth setup for alert notifications
 
-Airtable
+---
 
-Add Personal Access Token
+## 5. Run Workflow
 
-Select Base + Table
-
-Gmail (Optional)
-
-OAuth setup for alert notifications
-
-5. Run Workflow
-
-Manual run:
-
+### Manual Run
+```text
 Execute Workflow
+```
 
+### Automatic Scheduling
+- Trigger runs every **8 hours**
+- Fetches jobs posted within last **6 hours**
 
-Automatic scheduling:
+---
 
-Trigger runs every 8 hours
+## 6. Expected Output
 
-Fetches jobs posted within last 6 hours
-
-6. Expected Output
-Gmail Alert
-
+### Gmail Alert
 High priority jobs generate email notifications.
 
-Airtable Records
-
+### Airtable Records
 Each listing stores:
 
-Title
+- Title  
+- Description  
+- Score  
+- Priority  
+- Reason  
+- Observability signals  
+- Timestamp  
 
-Description
+---
 
-Score
+## Troubleshooting
 
-Priority
+### Container Not Starting
 
-Reason
-
-Observability signals
-
-Timestamp
-
-Troubleshooting
-Container not starting
+```bash
 docker compose down
 docker compose up --build
+```
 
-Port conflict
+---
+
+### Port Conflict
 
 Change port mapping in:
 
+```
 docker-compose.yml
-
+```
 
 Example:
 
+```yaml
 - "5679:5678"
+```
 
-Credential Errors
+---
+
+### Credential Errors
 
 Verify:
 
-Tokens are valid
+- Tokens are valid
+- OAuth redirect URL matches
+- Services are enabled
 
-OAuth redirect URL matches
+---
 
-Services are enabled
-
-Reproducibility Notes
+## Reproducibility Notes
 
 This setup was designed for:
 
-Minimal manual configuration
+- Minimal manual configuration
+- Clear credential separation
+- Deterministic workflow execution
+- Easy local deployment
 
-Clear credential separation
+The entire system can be rebuilt from this repository in under **5 minutes**.
 
-Deterministic workflow execution
+---
 
-Easy local deployment
+## Contact
 
-The entire system can be rebuilt from this repository in under 5 minutes.
+For questions regarding workflow behavior or configuration:
 
-Contact
-
-For questions regarding workflow behavior or configuration, refer to project documentation in /docs or inspect workflow nodes inside n8n.
+- Refer to project documentation in `/docs`
+- Inspect workflow nodes inside n8n
