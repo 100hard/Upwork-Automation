@@ -61,7 +61,7 @@ This enables future analytics and tuning.
 
 # Enhancements Implemented
 
-## Enhancement A — High Priority Alerts
+## Enhancement A: High Priority Alerts
 Implemented automated notification for high-priority opportunities via:
 
 - Gmail integration
@@ -73,7 +73,7 @@ Benefit:
 
 ---
 
-## Enhancement B — Skill-Based Signal Scoring
+## Enhancement B: Skill-Based Signal Scoring
 Added lightweight deterministic scoring layer before storage.
 
 Signals include:
@@ -88,7 +88,7 @@ Benefit:
 
 ---
 
-## Enhancement C — Observability Metadata Layer
+## Enhancement C: Observability Metadata Layer
 Added structured telemetry fields written to Airtable:
 
 - automationSignal
